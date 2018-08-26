@@ -16,13 +16,14 @@ import java.io.File
 typealias SymbolTable = HashTable<Symbol>
 
 fun main(args: Array<String>) {
-  val symbolTable = SymbolTable(100)
+  val inputFile = File(args[0])
+  val symbolTable = SymbolTable(inputFile.readLines().count())
 
   // Lines must contain an alphabetic key and optional number
   val regexKeyAndNumber = Regex("^([a-zA-Z]+) ([0-9]+)$")
   val regexKeyOnly = Regex("^[a-zA-Z]+$")
 
-  File(args[0]).forEachLine { line ->
+  inputFile.forEachLine { line ->
     when (line) {
       in regexKeyAndNumber -> {
         // Store the key-value pair in the table

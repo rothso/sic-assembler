@@ -6,7 +6,7 @@ interface ProbingStrategy {
   companion object {
     val LINEAR = object : ProbingStrategy {
       override fun nextHash(prevHash: Int, n: Int, max: Int): Int =
-          (prevHash + 2 * (n - 1) + 1) % max
+          (prevHash + 1) % max
     }
 
     val QUADRATIC = object : ProbingStrategy {

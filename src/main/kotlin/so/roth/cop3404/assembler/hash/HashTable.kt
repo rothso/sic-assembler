@@ -7,17 +7,31 @@ class HashTable<T : Keyed> constructor(
     private val ps: ProbingStrategy = ProbingStrategy.QUADRATIC
 ) {
   private val capacity = nextPrime(numItems * 2)
-  private val array = MutableList<Node<T>?>(capacity) { null }
+  private val array = MutableList<Node<T>>(capacity) { Node.Uninitialized }
 
   /**
    * Insert an item into the hash table.
    */
   fun insert(item: T) {
+    println("Storing $item: ")
     var hash = hash(item.key())
     var n = 1
-    while (array[hash] != null && array[hash] != Node.Deleted)
-      hash = ps.nextHash(hash, n++, capacity)
-    array[hash] = Node.Item(item)
+
+    while (true) {
+      val node = array[hash]
+      when (node) {
+        is Node.Uninitialized, Node.Deleted -> {
+          array[hash] = Node.Item(item)
+          return println("\tStored at $hash")
+        }
+        is Node.Item -> {
+          if (node.item.key() == item.key())
+            return println("\tError: ${item.key()} already exists at $hash")
+          println("\tCollision at $hash")
+          hash = ps.nextHash(hash, n++, capacity)
+        }
+      }
+    }
   }
 
   /**
@@ -40,7 +54,7 @@ class HashTable<T : Keyed> constructor(
     var n = 1
 
     // Probe for the key
-    while (array[hash] != null) {
+    while (array[hash] != Node.Uninitialized) {
       val node = array[hash]
       if (node is Node.Item<T> && node.item.key() == key)
         return f(node, hash)
