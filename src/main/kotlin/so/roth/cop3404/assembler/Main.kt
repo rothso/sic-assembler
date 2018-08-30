@@ -20,8 +20,8 @@ fun main(args: Array<String>) {
   val symbolTable = SymbolTable(inputFile.readLines().count())
 
   // Lines must contain an alphabetic key and optional number
-  val regexKeyAndNumber = Regex("^([a-zA-Z]+) ([0-9]+)$")
-  val regexKeyOnly = Regex("^[a-zA-Z]+$")
+  val regexKeyAndNumber = Regex("^[\\s]*([a-zA-Z]+) ([0-9]+)$")
+  val regexKeyOnly = Regex("^[\\s]*[a-zA-Z]+$")
 
   inputFile.forEachLine { line ->
     when (line) {

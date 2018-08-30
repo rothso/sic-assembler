@@ -1,0 +1,58 @@
+Project 1: Symbol Table
+=======================
+
+Rothanak So (n01128755)
+
+
+# Purpose
+
+The purpose of this project is to insert and find values in a hash table based
+on an input file. This project will later be used as the symbol table for a
+future assembler. The program uses a hash table that uses quadratic probing
+to resolve collisions. Keys can only be strings, which are hashed using the
+ASCII values of each character in accordance with Horner's polynomial.
+
+
+# Source files
+
+Source files are located at `src/main/kotlin/so/roth/cop3404/assembler`. The
+package structure is like so:
+
+  hash\
+       HashTable.kt		HashTable class (with the hashing algorithm)
+       Keyed.k			Interface that allows classes to specify their key
+       Node.kt			Sealed class of the kinds of HashTable cells
+       ProbingStrategy.kt	Interface for defining how to compute the next hash
+   util\
+       Math.kt			Helper methods for computing primes
+   Main.kt			Main method, which parses the input file
+   Symbol.kt			Data class representing a key-value pair
+
+
+# Input
+
+The program requires an input file to be passed in as the first argument. Each
+line of the input file must be either a string with a number (separated by a
+space) or just a string. Whitespace before the string will be ignored.
+
+
+# Output
+
+The program will output to the console. On insertions, the output will display
+the hashing location of the key, as well as any collisions. On finds, the
+output will display the location of the key and its associated value.
+
+The following errors will also be reported:
+
+  - Attempting to find before inserting
+  - Attempting a insert a key that already exists
+
+
+# How to execute
+
+The project is built using the Gradle build tool and outputs a JAR that can 
+be executed on the JVM.
+
+  1. Run the `make` command to produce the JAR.
+  2. Run `java -jar symbol-table-1.0.jar` specifying the input file name
+
