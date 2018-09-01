@@ -19,6 +19,7 @@ dependencies {
 }
 
 jar {
+    version = null
     manifest {
         attributes 'Main-Class': 'so.roth.cop3404.assembler.MainKt'
     }

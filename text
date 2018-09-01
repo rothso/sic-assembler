@@ -50,9 +50,10 @@ The following errors will also be reported:
 
 # How to execute
 
-The project is built using the Gradle build tool and outputs a JAR that can 
-be executed on the JVM.
+The project was developed using Gradle, but can be built with the Kotlin
+compiler directly. The compiler is automatically installed locally during
+the first `make`, which will output a JAR that can be executed on the JVM.
 
   1. Run the `make` command to produce the JAR.
-  2. Run `java -jar symbol-table-1.0.jar` specifying the input file name
-
+  2. Run `java -jar symbol-table.jar`, specifying the input file name
+  3. Optionally, run `make clean` afterward to free up disk space
