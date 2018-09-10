@@ -12,8 +12,12 @@ kotlinc:
 	@echo -e "\e[32mDownloading Kotlin 1.2.61\e[0m"
 	@curl -O -L https://github.com/JetBrains/kotlin/releases/download/v1.2.61/kotlin-compiler-1.2.61.zip
 	@unzip kotlin-compiler-1.2.61.zip
-	@rm kotlin-compiler-1.2.61.zip
+	@$(RM) kotlin-compiler-1.2.61.zip
 
 clean:
 	@$(RM) symbol-table.jar
 	@$(RM) -r kotlinc
+	@$(RM) sharfile
+
+sharfile: clean
+	@shar * > sharfile
