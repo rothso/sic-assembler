@@ -33,7 +33,7 @@ package structure is like so:
 
 The program requires an input file to be passed in as the first argument. Each
 line of the input file must be either a string with a number (separated by a
-space) or just a string. Whitespace before the string will be ignored.
+space) or just a string. Extra whitespace will be ignored.
 
 
 # Output

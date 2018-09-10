@@ -17,20 +17,25 @@ typealias SymbolTable = HashTable<Symbol>
 
 fun main(args: Array<String>) {
   val inputFile = File(args[0])
-  val symbolTable = SymbolTable(inputFile.readLines().count())
+  val inputLines = inputFile.readLines().filter { it.isNotBlank() }
+  val symbolTable = SymbolTable(inputLines.count())
 
   // Lines must contain an alphabetic key and optional number
-  val regexKeyAndNumber = Regex("^[\\s]*([a-zA-Z]+) ([0-9]+)$")
-  val regexKeyOnly = Regex("^[\\s]*[a-zA-Z]+$")
+  val regexKeyAndNumber = Regex("^\\s*([a-zA-Z]+)\\s+([0-9]+)\\s*$")
+  val regexKeyOnly = Regex("^\\s*([a-zA-Z]+)\\s*$")
 
-  inputFile.forEachLine { line ->
+  inputLines.forEach { line ->
     when (line) {
       in regexKeyAndNumber -> {
         // Store the key-value pair in the table
         val (name, number) = regexKeyAndNumber.matchEntire(line)!!.destructured
         symbolTable.insert(Symbol(name, number.toInt()))
       }
-      in regexKeyOnly -> symbolTable.find(line)
+      in regexKeyOnly -> {
+        // Search for the key in the table
+        val (key) = regexKeyOnly.matchEntire(line)!!.destructured
+        symbolTable.find(key)
+      }
       else -> println("Unrecognized input: $line")
     }
   }
