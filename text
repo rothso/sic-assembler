@@ -35,6 +35,7 @@ The program requires an input file to be passed in as the first argument. Each
 line of the input file must be either a string with a number (separated by a
 space) or just a string. Extra whitespace will be ignored.
 
+There is a sample input file at `src/test/resources/input.txt`.
 
 # Output
 
@@ -46,6 +47,8 @@ The following errors will also be reported:
 
   - Attempting to find before inserting
   - Attempting a insert a key that already exists
+
+There is a sample output file at `src/test/resources/output.txt`.
 
 
 # How to execute
