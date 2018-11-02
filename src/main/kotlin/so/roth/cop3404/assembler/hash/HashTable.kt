@@ -10,10 +10,9 @@ class HashTable<T : Keyed> constructor(
   private val array = MutableList<Node<T>>(capacity) { Node.Uninitialized }
 
   /**
-   * Insert an item into the hash table.
+   * Insert an item into the hash table. Duplicate items will not be inserted.
    */
   fun insert(item: T) {
-    println("Storing $item: ")
     var hash = hash(item.key())
     var n = 1
 
@@ -22,12 +21,10 @@ class HashTable<T : Keyed> constructor(
       when (node) {
         is Node.Uninitialized, Node.Deleted -> {
           array[hash] = Node.Item(item)
-          return println("\tStored at $hash")
+          return
         }
         is Node.Item -> {
-          if (node.item.key() == item.key())
-            return println("\tError: ${item.key()} already exists at $hash")
-          println("\tCollision at $hash")
+          if (node.item.key() == item.key()) return
           hash = ps.nextHash(hash, n++, capacity)
         }
       }
@@ -37,9 +34,7 @@ class HashTable<T : Keyed> constructor(
   /**
    * Retrieve an item from the hash table, or null if it does not exist.
    */
-  fun find(key: String): T? = search(key) { node, pos ->
-    node.item.also { println("Found $it at location $pos") }
-  }.also { if (it == null) println("Error: $key not found") }
+  fun find(key: String): T? = search(key) { node, pos -> node.item }
 
   /**
    * Delete an item from the hash table, returning it if successful.
