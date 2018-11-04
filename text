@@ -1,16 +1,17 @@
-Project 1: Symbol Table
-=======================
+Project 3: Pass 1 Assembler
+===========================
 
 Rothanak So (n01128755)
 
 
 # Purpose
 
-The purpose of this project is to insert and find values in a hash table based
-on an input file. This project will later be used as the symbol table for a
-future assembler. The program uses a hash table that uses quadratic probing
-to resolve collisions. Keys can only be strings, which are hashed using the
-ASCII values of each character in accordance with Horner's polynomial.
+The purpose of this project is to implement pass 1 of the SIC assembler. This
+project will later be used for pass 2. The program uses a hash table to maintain
+a list of valid mnemonics and a separate hash table to store labeled instructions
+with their computed addresses. The program parses instructions based off a grammar
+in order to differentiate between labeled and unlabeled instructions, and directives
+and instructions.
 
 
 # Source files
@@ -25,28 +26,43 @@ package structure is like so:
        ProbingStrategy.kt	Interface for defining how to compute the next hash
    util\
        Math.kt			Helper methods for computing primes
-   Main.kt			Main method, which parses the input file
-   Symbol.kt			Data class representing a key-value pair
+       Sic.kt           Helper method for computing size of an BYTE instruction
+   AssemblyError        Data class representing a stored error message
+   Main.kt			    Main method, which performs the pass 1 assembly
+   Grammar.kt           A set of classes describing the grammar of SIC
+   Sicop.kt			    Data class representing a valid SIC mnemonic
 
 
 # Input
 
-The program requires an input file to be passed in as the first argument. Each
-line of the input file must be either a string with a number (separated by a
-space) or just a string. Extra whitespace will be ignored.
+The program requires an input file to be passed in as the first argument. The
+input file is the SIC program that is to be assembled. The input program will
+need to adhere to the following format:
 
-There is a sample input file at `src/test/resources/input.txt`.
+     Col 1-8    Label (optional)
+     Col 9      Blank
+     Col 10     + or * (optional)
+     Col 11-17  Mnemonic
+     Col 18     Blank
+     Col 19     #, @, = (optional)
+     Col 20-29  Operand
+     Col 30-31  Blank
+     Col 32-80  Comments (optional)
+
+The sample input file is located at `src/test/resources/input.txt`.
+
 
 # Output
 
-The program will output to the console. On insertions, the output will display
-the hashing location of the key, as well as any collisions. On finds, the
-output will display the location of the key and its associated value.
+The program will output to the console. The program will print the input
+file with the computed addresses of each instruction. The program will
+also display the hash table in which the labeled instructions were stored.
 
 The following errors will also be reported:
 
-  - Attempting to find before inserting
-  - Attempting a insert a key that already exists
+  - Instructions without labels
+  - Invalid mnemonics
+  - Duplicate labels
 
 There is a sample output file at `src/test/resources/output.txt`.
 
@@ -58,5 +74,5 @@ compiler directly. The compiler is automatically installed locally during
 the first `make`, which will output a JAR that can be executed on the JVM.
 
   1. Run the `make` command to produce the JAR.
-  2. Run `java -jar symbol-table.jar`, specifying the input file name
+  2. Run `java -jar assembler.jar`, specifying the input file name
   3. Optionally, run `make clean` afterward to free up disk space

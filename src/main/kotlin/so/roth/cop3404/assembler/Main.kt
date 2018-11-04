@@ -12,8 +12,8 @@ import java.io.File
  */
 
 fun main(args: Array<String>) {
-  val inputFile = File("src/main/resources/SICOPS.txt")
-  val inputLines = inputFile.readLines().filter { it.isNotBlank() }
+  val sicopsFile = File("src/main/resources/SICOPS.txt")
+  val inputLines = sicopsFile.readLines().filter { it.isNotBlank() }
   val numLines = inputLines.count()
 
   // Lines must describe a mnemonic and not a register
@@ -33,10 +33,9 @@ fun main(args: Array<String>) {
   val output = ArrayList<String>()
   val errors = ArrayList<AssemblyError>()
   var nextAddress = 0
-  File("src/main/resources/input.txt").forEachLine {
-    val line = it.trim()
+  File(args[0]).forEachLine { line ->
 
-    if (line[0] == '.') {
+    if (line.trim()[0] == '.') {
       // Line is a comment
       output.add(line)
     } else {
@@ -57,15 +56,6 @@ fun main(args: Array<String>) {
         if (label.isNotBlank()) LabeledInstruction(label, command) else command
       }
 
-      // Add to symbol table
-      if (instr is LabeledInstruction) {
-        if (symbolTable.find(instr.key()) != null) {
-          errors.add(AssemblyError("Duplicate Label \"${instr.label}\""))
-        } else {
-          symbolTable.insert(instr)
-        }
-      }
-
       // Set the start address
       val unwrapped = if (instr is LabeledInstruction) instr.instruction else instr
       if (unwrapped is Directive) {
@@ -75,7 +65,7 @@ fun main(args: Array<String>) {
       }
 
       // Prepare to determine the address of the current line
-      fun decorateAddress(ln: Line): AddressedLine = when (ln) {
+      fun decorateAddress(ln: Line): AddressedLine? = when (ln) {
         is LabeledInstruction -> decorateAddress(ln.instruction)
         is Directive -> AddressedLine(nextAddress, instr).also { ln.address = nextAddress }
         is Instruction -> {
@@ -89,7 +79,7 @@ fun main(args: Array<String>) {
               else -> with(sicOpsTable.find(ln.modifier + ln.mnemonic)) {
                 if (this == null) {
                   errors.add(AssemblyError("Ignoring Invalid Mneomonic \"${ln.mnemonic}\""))
-                  0
+                  return null
                 } else format
               }
             }
@@ -97,8 +87,18 @@ fun main(args: Array<String>) {
         }
       }
 
+
+      // Add to symbol table
+      if (instr is LabeledInstruction) {
+        if (symbolTable.find(instr.key()) != null) {
+          errors.add(AssemblyError("Duplicate Label \"${instr.label}\""))
+        } else {
+          symbolTable.insert(instr)
+        }
+      }
+
       // Print the addressed output immediately
-      val addressed = decorateAddress(instr)
+      val addressed = decorateAddress(instr) ?: return@forEachLine
       output.add(addressed.toString())
 
       // If there was no label, store an error
