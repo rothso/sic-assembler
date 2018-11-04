@@ -1,6 +1,8 @@
 package so.roth.cop3404.assembler
 
 import so.roth.cop3404.assembler.hash.HashTable
+import so.roth.cop3404.assembler.hash.Node
+import so.roth.cop3404.assembler.util.sizeBytes
 import java.io.File
 
 /**
@@ -28,13 +30,15 @@ fun main(args: Array<String>) {
 
   // Begin pass 1 assembly
   val symbolTable = HashTable<LabeledInstruction>(numLines)
+  val output = ArrayList<String>()
+  val errors = ArrayList<AssemblyError>()
   var nextAddress = 0
   File("src/main/resources/input.txt").forEachLine {
     val line = it.trim()
 
     if (line[0] == '.') {
       // Line is a comment
-      println(line)
+      output.add(line)
     } else {
       // Parse into an instruction
       val instr = line.padEnd(32, ' ').let { ln ->
@@ -55,7 +59,11 @@ fun main(args: Array<String>) {
 
       // Add to symbol table
       if (instr is LabeledInstruction) {
-        symbolTable.insert(instr)
+        if (symbolTable.find(instr.key()) != null) {
+          errors.add(AssemblyError("Duplicate Label \"${instr.label}\""))
+        } else {
+          symbolTable.insert(instr)
+        }
       }
 
       // Set the start address
@@ -69,16 +77,20 @@ fun main(args: Array<String>) {
       // Prepare to determine the address of the current line
       fun decorateAddress(ln: Line): AddressedLine = when (ln) {
         is LabeledInstruction -> decorateAddress(ln.instruction)
-        is Directive -> AddressedLine(nextAddress, instr)
+        is Directive -> AddressedLine(nextAddress, instr).also { ln.address = nextAddress }
         is Instruction -> {
           AddressedLine(nextAddress, instr).also {
+            ln.address = nextAddress
             nextAddress += when (ln.mnemonic) {
               "WORD" -> 3
               "RESW" -> 3 * ln.operand.toInt()
-              "BYTE" -> 1 // TODO fix
+              "BYTE" -> 1 * sizeBytes(ln.operand)
               "RESB" -> ln.operand.toInt()
-              else -> sicOpsTable.find(ln.modifier + ln.mnemonic).let {
-                if (it == null) 0 else it.format
+              else -> with(sicOpsTable.find(ln.modifier + ln.mnemonic)) {
+                if (this == null) {
+                  errors.add(AssemblyError("Ignoring Invalid Mneomonic \"${ln.mnemonic}\""))
+                  0
+                } else format
               }
             }
           }
@@ -86,7 +98,27 @@ fun main(args: Array<String>) {
       }
 
       // Print the addressed output immediately
-      println(decorateAddress(instr))
+      val addressed = decorateAddress(instr)
+      output.add(addressed.toString())
+
+      // If there was no label, store an error
+      if (addressed.line !is LabeledInstruction) {
+        errors.add(AssemblyError("Undefined Label At Address ${addressed.address}"))
+      }
+    }
+  }
+
+  // Print the outputs
+  errors.forEach { println("ERROR: $it") }.also { println() }
+  output.forEach(::println).also { println() }
+
+  // Print the table
+  System.out.printf("%-15s %-10s %-10s\n", "Table Location", "Label", "Address")
+  symbolTable.forEachIndexed { index, node ->
+    if (node is Node.Item<LabeledInstruction>) {
+      with(node.item) {
+        System.out.printf("%-15d %-10s %04X\n", index, label, instruction.address)
+      }
     }
   }
 }

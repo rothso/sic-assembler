@@ -2,7 +2,9 @@ package so.roth.cop3404.assembler
 
 import so.roth.cop3404.assembler.hash.Keyed
 
-sealed class Line
+sealed class Line {
+  var address: Int = 0
+}
 
 sealed class Command : Line() {
   abstract val mnemonic: String

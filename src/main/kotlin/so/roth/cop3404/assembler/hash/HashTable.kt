@@ -5,7 +5,7 @@ import so.roth.cop3404.assembler.util.nextPrime
 class HashTable<T : Keyed> constructor(
     numItems: Int,
     private val ps: ProbingStrategy = ProbingStrategy.QUADRATIC
-) {
+) : Iterable<Node<T>> {
   private val capacity = nextPrime(numItems * 2)
   private val array = MutableList<Node<T>>(capacity) { Node.Uninitialized }
 
@@ -64,4 +64,6 @@ class HashTable<T : Keyed> constructor(
 
   private fun hash(key: String, acc: Int = 0): Int =
       if (key == "") acc else hash(key.substring(1), (acc * 26 + key[0].toInt()) % capacity)
+
+  override fun iterator(): Iterator<Node<T>> = array.iterator()
 }
