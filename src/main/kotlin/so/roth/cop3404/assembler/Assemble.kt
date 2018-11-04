@@ -12,13 +12,13 @@ import java.io.File
 fun main(args: Array<String>) {
   val inputFile = File("src/main/resources/SICOPS.txt")
   val inputLines = inputFile.readLines().filter { it.isNotBlank() }
-  val numLimes = inputLines.count()
+  val numLines = inputLines.count()
 
   // Lines must describe a mnemonic and not a register
   val operation = Regex("^([+*]?[A-Z]+)\\s*([0-9A-F]{2})\\s*(\\d)\\s*\\d\$")
 
   // Read and store sicops information
-  val sicOpsTable = HashTable<Sicop>(numLimes)
+  val sicOpsTable = HashTable<Sicop>(numLines)
   inputLines.forEach { line ->
     operation.matchEntire(line)?.destructured?.let { (mnemonic, opcode, format) ->
       val sicop = Sicop(mnemonic, opcode, format.toInt())
@@ -27,8 +27,7 @@ fun main(args: Array<String>) {
   }
 
   // Begin pass 1 assembly
-  val symbolTable = HashTable<LabeledInstruction>(numLimes)
-  val addressedOutput = ArrayList<AddressedLine>(numLimes)
+  val symbolTable = HashTable<LabeledInstruction>(numLines)
   var nextAddress = 0
   File("src/main/resources/input.txt").forEachLine {
     val line = it.trim()
@@ -42,14 +41,13 @@ fun main(args: Array<String>) {
         val label = ln.substring(0, 8).trim()
         val modifier = (ln[9] + " ").trim()
         val mnemonic = ln.substring(10, 17).trim()
-        val special = ln[18]
+        val special = (ln[18] + " ").trim()
         val operand = ln.substring(19, 29).trim()
         val comment = ln.substring(31).trim()
 
-        val command = if (mnemonic == "START" || mnemonic == "BASE") {
-          Directive(mnemonic, operand, comment)
-        } else {
-          Instruction(modifier, mnemonic, special, operand, comment)
+        val command = when(mnemonic) {
+          "START", "BASE", "END" -> Directive(mnemonic, operand, comment)
+          else -> Instruction(modifier, mnemonic, special, operand, comment)
         }
 
         if (label.isNotBlank()) LabeledInstruction(label, command) else command
@@ -77,7 +75,7 @@ fun main(args: Array<String>) {
             nextAddress += when (ln.mnemonic) {
               "WORD" -> 3
               "RESW" -> 3 * ln.operand.toInt()
-              "BYTE" -> 1
+              "BYTE" -> 1 // TODO fix
               "RESB" -> ln.operand.toInt()
               else -> sicOpsTable.find(ln.modifier + ln.mnemonic).let {
                 if (it == null) 0 else it.format
@@ -87,10 +85,8 @@ fun main(args: Array<String>) {
         }
       }
 
-      val addressed = decorateAddress(instr)
-      addressedOutput.add(addressed)
+      // Print the addressed output immediately
+      println(decorateAddress(instr))
     }
   }
-
-  addressedOutput.forEach(::println)
 }

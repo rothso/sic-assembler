@@ -14,19 +14,19 @@ data class Directive(
   val comment: String
 ) : Command() {
   override fun toString(): String {
-    return "$mnemonic\t$operand\t$comment"
+    return String.format("%-8s %-11s %s", mnemonic, operand, comment)
   }
 }
 
 data class Instruction(
     val modifier: String, // todo nullable
     override val mnemonic: String,
-    val special: Char,
+    val special: String,
     val operand: String,
     val comment: String
 ) : Command() {
   override fun toString(): String {
-    return "$modifier$mnemonic\t$special$operand\t$comment"
+    return String.format("%-8s %-11s %s", modifier + mnemonic, special + operand, comment);
   }
 }
 
@@ -36,7 +36,7 @@ data class LabeledInstruction (
 ) : Line(), Keyed {
   override fun key(): String = label
   override fun toString(): String {
-    return "$label\t$instruction"
+    return String.format("%-7s %s", label, instruction);
   }
 }
 
@@ -45,6 +45,9 @@ data class AddressedLine (
     val line: Line
 ) {
   override fun toString(): String {
-    return "${address.toString(16).toUpperCase()}\t$line"
+    return String.format("%04X   %s", address, when(line) {
+      is LabeledInstruction -> line
+      else -> String.format("%7s %s", "", line)
+    })
   }
 }
