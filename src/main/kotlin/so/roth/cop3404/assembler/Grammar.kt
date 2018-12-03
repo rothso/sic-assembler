@@ -2,54 +2,42 @@ package so.roth.cop3404.assembler
 
 import so.roth.cop3404.assembler.hash.Keyed
 
-sealed class Line {
-  var address: Int = 0
+data class Block(val number: Int, val name: String)
+
+data class Address(val relative: Int, val block: Block)
+
+data class Line(
+    val label: String?,
+    val command: Command,
+    val comment: String?
+) : Keyed {
+  override fun key(): String = label ?: throw IllegalStateException("Key is null")
+  override fun toString(): String {
+    return "%-7s %s %s".format(label ?: "", command, comment ?: "")
+  }
 }
 
-sealed class Command : Line() {
+sealed class Command {
   abstract val mnemonic: String
+  abstract val operand: String
 }
 
 data class Directive(
-  override val mnemonic: String,
-  val operand: String,
-  val comment: String
+    override val mnemonic: String,
+    override val operand: String
 ) : Command() {
   override fun toString(): String {
-    return String.format("%-8s %-11s %s", mnemonic, operand, comment)
+    return "%-8s %-11s".format(mnemonic, operand)
   }
 }
 
 data class Instruction(
-    val modifier: String, // todo nullable
+    val modifier: String?,
     override val mnemonic: String,
-    val special: String,
-    val operand: String,
-    val comment: String
+    val special: String?,
+    override val operand: String
 ) : Command() {
   override fun toString(): String {
-    return String.format("%-8s %-11s %s", modifier + mnemonic, special + operand, comment);
-  }
-}
-
-data class LabeledInstruction (
-    val label: String,
-    val instruction: Command
-) : Line(), Keyed {
-  override fun key(): String = label
-  override fun toString(): String {
-    return String.format("%-7s %s", label, instruction);
-  }
-}
-
-data class AddressedLine (
-    val address: Int,
-    val line: Line
-) {
-  override fun toString(): String {
-    return String.format("%04X   %s", address, when(line) {
-      is LabeledInstruction -> line
-      else -> String.format("%7s %s", "", line)
-    })
+    return "%-8s %-11s".format((modifier ?: "") + mnemonic, (special ?: "") + operand)
   }
 }
