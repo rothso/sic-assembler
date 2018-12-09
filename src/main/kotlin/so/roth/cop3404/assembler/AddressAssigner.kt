@@ -1,6 +1,6 @@
 package so.roth.cop3404.assembler
 
-import so.roth.cop3404.assembler.util.sizeBytes
+import so.roth.cop3404.assembler.grammar.*
 
 class AddressAssigner {
   private val useRegistry = hashMapOf<String, Block>() // (name, blockNum)
@@ -40,16 +40,19 @@ class AddressAssigner {
 
   fun onInstruction(instruction: Instruction): Address {
     val address = Address(locCounter, block)
-    locCounter += when (val operation = instruction.operation) {
-      is DataOp -> when (operation.name) {
-        // TODO avoid the need to do hacky casts
+    locCounter += when (val op = instruction.operation) {
+      is DataOp -> when (op.name) {
         "WORD" -> 3
-        "RESW" -> 3 * (instruction.operand as NumberOperand).value.toString(16).toInt()
-        "BYTE" -> 1 * sizeBytes((instruction.operand as LabelOperand).label)
-        "RESB" -> (instruction.operand as NumberOperand).value
-        else -> throw InvalidMnemonicException(operation.name)
+        "RESW" -> 3 * (instruction.operand as NumericOperand).value
+        "BYTE" -> when (val operand = instruction.operand) {
+          is CharOperand -> operand.string.length
+          is HexOperand -> operand.hexString.length / 2
+          else -> throw InvalidOperandException(operand.toString())
+        }
+        "RESB" -> (instruction.operand as NumericOperand).value
+        else -> throw InvalidMnemonicException(op.name)
       }
-      is SicOp -> operation.format
+      is SicOp -> op.format
     }
     return address // relative address
   }

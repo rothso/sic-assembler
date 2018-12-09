@@ -1,5 +1,6 @@
 package so.roth.cop3404.assembler
 
+import so.roth.cop3404.assembler.grammar.Line
 import so.roth.cop3404.assembler.hash.HashTable
 import so.roth.cop3404.assembler.hash.Keyed
 import so.roth.cop3404.assembler.hash.Node

@@ -1,6 +1,8 @@
 package so.roth.cop3404.assembler
 
-class Parser(private val table: SicOpsTable) {
+import so.roth.cop3404.assembler.grammar.*
+
+class Parser(private val sicOps: SicOpsTable) {
 
   fun parse(line: String): Line? {
     // Check if line is just a comment
@@ -18,12 +20,12 @@ class Parser(private val table: SicOpsTable) {
 
     val command = when (mnemonic) {
       "START", "BASE", "END" -> Directive(mnemonic, operand)
+      "WORD", "BYTE", "RESW", "RESB" -> {
+        Instruction(modifier, DataOp(mnemonic), special, parseOperand(operand))
+      }
       else -> {
-        val operation = when (mnemonic) {
-          "WORD", "BYTE", "RESW", "RESB" -> DataOp(mnemonic)
-          else -> table.getSicOp(mnemonic, modifier) ?: throw InvalidMnemonicException(mnemonic)
-        }
-        Instruction(modifier, operation, special, parseOperand(operand))
+        val op = sicOps.getSicOp(mnemonic, modifier) ?: throw InvalidMnemonicException(mnemonic)
+        Instruction(modifier, op, special, parseOperand(operand))
       }
     }
 
@@ -31,14 +33,21 @@ class Parser(private val table: SicOpsTable) {
   }
 
   private fun parseOperand(operand: String): Operand {
-    return when {
-      operand.matches(Regex("[A-Z]+,X")) -> IndexedOperand(operand.split(",")[0])
-      operand.toIntOrNull(16) != null -> NumberOperand(operand.toInt(16))
-      operand.matches(Regex("[A-Z]{1,2},[A-Z]{1,2}")) -> {
-        val registers = operand.split(",")
-        RegisterOperand(registers[0], registers[1])
+    return when (operand) {
+      "" -> BlankOperand
+      in Regex("-?[\\d]+") -> NumericOperand(operand.toInt())
+      in Regex("[A-Z]+,X") -> IndexedOperand(operand.split(",")[0])
+      in Regex("C'[A-Z0-9]+'") -> CharOperand(operand.substringAfter("'").substringBefore("'"))
+      in Regex("X'[A-F0-9]+'") -> HexOperand(operand.substringAfter("'").substringBefore("'"))
+      in Regex("[A-Z]{1,2},[A-Z]{1,2}") -> operand.split(",").let { (r1, r2) ->
+        val reg1 = sicOps.getRegister(r1) ?: throw InvalidRegisterException(r1)
+        val reg2 = sicOps.getRegister(r2) ?: throw InvalidRegisterException(r2)
+        RegisterOperand(reg1, reg2)
       }
-      else -> LabelOperand(operand)
+      in Regex("[A-Z0-9]+") -> LabelOperand(operand)
+      else -> throw InvalidOperandException(operand)
     }
   }
+
+  private operator fun Regex.contains(text: CharSequence): Boolean = this.matches(text)
 }

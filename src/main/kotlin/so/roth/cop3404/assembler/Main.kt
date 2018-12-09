@@ -1,5 +1,8 @@
 package so.roth.cop3404.assembler
 
+import so.roth.cop3404.assembler.grammar.Directive
+import so.roth.cop3404.assembler.grammar.Instruction
+import so.roth.cop3404.assembler.grammar.Line
 import java.io.File
 
 // Pass 1 artifacts
@@ -17,7 +20,7 @@ data class CommentOutput(val comment: String) : OutputLine() {
 
 data class AssembledLine(val address: Int, val obj: ObjectCode?, val line: Line) : OutputLine() {
   override fun toString(): String {
-    return String.format("%06X  %-8s  %s", address, obj ?: "------", line)
+    return String.format("%06X  %-12s  %s", address, obj ?: "", line)
   }
 }
 
@@ -44,13 +47,13 @@ fun main(args: Array<String>) {
   val parser = Parser(sicOpsTable)
   val output = ArrayList<SourceLine>()
   inputLines.forEach { ln ->
-    val line = parser.parse(ln) ?: ln.let {
-      output.add(CommentLine(ln))
-      return@forEach
-    }
-
     // Calculate the relative address
     try {
+      val line = parser.parse(ln) ?: ln.let {
+        output.add(CommentLine(ln))
+        return@forEach
+      }
+
       val address = when (line.command) {
         is Directive -> addressAssigner.onDirective(line.command)
         is Instruction -> addressAssigner.onInstruction(line.command)
@@ -71,7 +74,7 @@ fun main(args: Array<String>) {
 
   // Perform second pass
   val absoluteTable = symbolStore.toAbsolute(addressAssigner.useStartAddresses)
-  val objectCodeAssembler = ObjectCodeAssembler(sicOpsTable, absoluteTable)
+  val objectCodeAssembler = ObjectCodeAssembler(absoluteTable)
   val outputLines = ArrayList<OutputLine>()
   output.forEach { s ->
     when (s) {
@@ -93,7 +96,7 @@ fun main(args: Array<String>) {
 
 
   // Print the errors followed by the assembler report
-  errors.forEach { println("ERROR: ${it.message}") }
+  errors.forEach { println("********** ERROR: ${it.message}") }
   println()
 
   for (outputLine in outputLines) {

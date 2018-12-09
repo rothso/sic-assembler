@@ -1,4 +1,4 @@
-package so.roth.cop3404.assembler
+package so.roth.cop3404.assembler.grammar
 
 import so.roth.cop3404.assembler.hash.Keyed
 
@@ -7,5 +7,5 @@ data class Register(
     val number: Int
 ) : Keyed {
   override fun key(): String = name
-  override fun toString(): String = "$name\t$number"
+  override fun toString(): String = name
 }

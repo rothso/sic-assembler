@@ -1,10 +1,9 @@
 package so.roth.cop3404.assembler
 
-class ObjectCodeAssembler(
-    private val sicOps: SicOpsTable,
-    private val addresses: SymbolTable.Absolute
-) {
-  var base: Int? = null
+import so.roth.cop3404.assembler.grammar.*
+
+class ObjectCodeAssembler(private val addresses: SymbolTable.Absolute) {
+  private var base: Int? = null
 
   private enum class Flag(val flag: Int) {
     INDIRECT(0b000010),
@@ -24,19 +23,20 @@ class ObjectCodeAssembler(
   fun onInstruction(instruction: Instruction, currentAddress: Int): ObjectCode? {
     return when (val op = instruction.operation) {
       is DataOp -> when (op.name) {
-        "WORD" -> WordConstant((instruction.operand as NumberOperand).value)
-        "BYTE" -> null // TODO
+        "WORD" -> WordConstant((instruction.operand as NumericOperand).value)
+        "BYTE" -> when(val operand = instruction.operand) {
+          is CharOperand -> CharConstant(operand.string)
+          is HexOperand -> HexConstant(operand.hexString)
+          else -> throw InvalidOperandException(operand.toString())
+        }
         "RESW" -> null
         "RESB" -> null
         else -> null
       }
       is SicOp -> when (val format = op.format) {
         2 -> {
-          val (register1, register2) = instruction.operand as RegisterOperand
-          // TODO: parse register in Parser
-          val r1 = sicOps.getRegister(register1)?.number ?: throw IllegalStateException()
-          val r2 = sicOps.getRegister(register2)?.number ?: throw IllegalStateException()
-          Format2(op.opcode, r1, r2)
+          val (r1, r2) = instruction.operand as RegisterOperand
+          Format2(op.opcode, r1.number, r2.number)
         }
         3, 4 -> {
           // Handle the opcode flags
@@ -55,21 +55,22 @@ class ObjectCodeAssembler(
 
           // Handle the target address
           val targetAddress = when (val operand = instruction.operand) {
-            is RegisterOperand -> throw IllegalStateException("Cannot use register-to-register")
-            is NumberOperand -> operand.value
+            is BlankOperand -> 0
+            is RegisterOperand -> throw BadOperandException(operand.toString(), currentAddress)
+            is NumericOperand -> operand.value
             is LabelOperand -> {
               val targetAddress = addresses.getAddress(operand.label)
-                  ?: throw IllegalStateException("The target label ${operand.label} does not exist")
+                  ?: throw UnknownLabelException(operand.label, currentAddress)
 
               when (format) {
                 3 -> {
-                  val disp = targetAddress - (currentAddress + op.format)
-                  if (disp >= -2048 && disp <= 2047) {
+                  val displacement = targetAddress - (currentAddress + op.format)
+                  if (displacement >= -2048 && displacement <= 2047) {
                     taFlag = taFlag or Flag.PCREL.flag
-                    disp
+                    displacement
                   } else {
                     taFlag = taFlag or Flag.BASEREL.flag
-                    targetAddress - (base ?: throw IllegalStateException("no base"))
+                    targetAddress - (base ?: throw NoBaseException())
                   }
                 }
                 4 -> {
@@ -79,6 +80,7 @@ class ObjectCodeAssembler(
                 else -> throw IllegalStateException() // should never reach here
               }
             }
+            is CharOperand, is HexOperand -> throw IllegalStateException()
           }
 
           // Return the object code object

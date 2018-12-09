@@ -1,0 +1,18 @@
+********** ERROR: Missing label at address 107 in block "main".
+********** ERROR: Missing label at address 1AF3 in block "main".
+
+000100                ADDRES  START    100
+000100  69100119      NOW     +LDB     #BEGIN      load base register
+000104                XXX     BASE     BEGIN       tell assembler
+000104  03200F        YYY     LDA      BE          A <- (m..m+2)
+000107  4F0000                RSUB
+00010A                EN      RESW     4
+000116  000002        BE      WORD     2
+000119                BEGIN   RESW     1
+00011C                JUNK    RESW     2200
+001AE4                THERE   RESW     1
+001AE7  034003        ZZZ     LDA      JUNK
+001AEA  5A313536      DDD     BYTE     C'Z156'
+001AEE  5789          KEY     BYTE     X'5789'
+001AF0  0F2FF1        MMM     STA      THERE
+001AF3                        END      NOW
