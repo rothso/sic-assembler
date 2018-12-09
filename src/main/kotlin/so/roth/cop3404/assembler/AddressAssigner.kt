@@ -40,19 +40,27 @@ class AddressAssigner {
 
   fun onInstruction(instruction: Instruction): Address {
     val address = Address(locCounter, block)
+    val operand = instruction.operand
     locCounter += when (val op = instruction.operation) {
       is DataOp -> when (op.name) {
         "WORD" -> 3
-        "RESW" -> 3 * (instruction.operand as NumericOperand).value
-        "BYTE" -> when (val operand = instruction.operand) {
+        "BYTE" -> when (operand) {
           is CharOperand -> operand.string.length
           is HexOperand -> operand.hexString.length / 2
-          else -> throw InvalidOperandException(operand.toString())
+          else -> 0
         }
-        "RESB" -> (instruction.operand as NumericOperand).value
-        else -> throw InvalidMnemonicException(op.name)
+        "RESW" -> when (operand) {
+          is NumericOperand -> 3 * operand.value
+          else -> 0
+        }
+        "RESB" -> when (operand) {
+          is NumericOperand -> operand.value
+          else -> 0
+        }
+        else -> throw UnsupportedOpcodeException(op.name)
       }
       is SicOp -> op.format
+      is UnsupportedOp -> 0
     }
     return address // relative address
   }

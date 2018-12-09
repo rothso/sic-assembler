@@ -22,13 +22,18 @@ class ObjectCodeAssembler(private val addresses: SymbolTable.Absolute) {
   }
 
   fun onInstruction(instruction: Instruction, currentAddress: Int): ObjectCode? {
+    val operand = instruction.operand
     return when (val op = instruction.operation) {
+      is UnsupportedOp -> throw UnsupportedOpcodeException(op.operation)
       is DataOp -> when (op.name) {
-        "WORD" -> WordConstant((instruction.operand as NumericOperand).value)
-        "BYTE" -> when(val operand = instruction.operand) {
+        "WORD" -> when(operand) {
+          is NumericOperand -> WordConstant(operand.value)
+          else -> throw MisusedOperandException(operand.toString())
+        }
+        "BYTE" -> when(operand) {
           is CharOperand -> CharConstant(operand.string)
           is HexOperand -> HexConstant(operand.hexString)
-          else -> throw BadOperandException(op.toString(), currentAddress)
+          else -> throw MisusedOperandException(op.toString())
         }
         "RESW" -> null
         "RESB" -> null
@@ -40,7 +45,7 @@ class ObjectCodeAssembler(private val addresses: SymbolTable.Absolute) {
             is Register1Operand -> Format2(op.opcode, ro.r1.number, 0)
             is Register2Operand -> Format2(op.opcode, ro.r1.number, ro.r2.number)
             is RegisterNOperand -> Format2(op.opcode, ro.r1.number, ro.n - 1)
-            else -> throw BadOperandException(ro.toString(), currentAddress)
+            else -> throw MisusedOperandException(ro.toString())
           }
         }
         3, 4 -> {
@@ -59,13 +64,13 @@ class ObjectCodeAssembler(private val addresses: SymbolTable.Absolute) {
           var taFlag = if (instruction.operand is IndexedOperand) Flag.INDEXED.flag else 0
 
           // Handle the target address
-          val targetAddress = when (val operand = instruction.operand) {
+          val targetAddress = when (operand) {
             is BlankOperand -> 0
             is NumericOperand -> operand.value
             is HexOperand -> operand.hexString.toInt(16)
             is LabelOperand -> {
               val targetAddress = addresses.getAddress(operand.label)
-                  ?: throw UnknownLabelException(operand.label, currentAddress)
+                  ?: throw UnresolvableLabelException(operand.label)
 
               when (format) {
                 3 -> {
@@ -85,7 +90,7 @@ class ObjectCodeAssembler(private val addresses: SymbolTable.Absolute) {
                 else -> throw IllegalStateException("Bad format") // should never reach here
               }
             }
-            else -> throw BadOperandException(operand.toString(), currentAddress)
+            else -> throw MisusedOperandException(operand.toString())
           }
 
           // Return the object code object

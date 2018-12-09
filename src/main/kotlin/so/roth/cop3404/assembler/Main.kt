@@ -2,27 +2,8 @@ package so.roth.cop3404.assembler
 
 import so.roth.cop3404.assembler.grammar.Directive
 import so.roth.cop3404.assembler.grammar.Instruction
-import so.roth.cop3404.assembler.grammar.Line
 import java.io.File
-
-// Pass 1 artifacts
-sealed class SourceLine
-
-data class CommentLine(val comment: String) : SourceLine()
-data class AddressedLine(val address: Address, val line: Line) : SourceLine()
-
-// Pass 2 artifacts
-sealed class OutputLine
-
-data class CommentOutput(val comment: String) : OutputLine() {
-  override fun toString() = String.format("%22s%s", "", comment)
-}
-
-data class AssembledLine(val address: Int, val obj: ObjectCode?, val line: Line) : OutputLine() {
-  override fun toString(): String {
-    return String.format("%06X  %-12s  %s", address, obj ?: "", line)
-  }
-}
+import java.util.*
 
 /**
  * SIC/XE Assembler
@@ -36,8 +17,8 @@ fun main(args: Array<String>) {
   val inputLines = inputFile.readLines().filter { it.isNotBlank() }
   val numLines = inputLines.count()
 
-  // Errors will be collected and reported at the top
-  val errors = ArrayList<AssemblyException>()
+  // Errors will be collected and reported
+  val errors = Hashtable<Int, AssemblyException>()
 
   // The symbol table stores addresses of labelled lines
   val symbolStore = SymbolTable(numLines)
@@ -46,12 +27,14 @@ fun main(args: Array<String>) {
   val addressAssigner = AddressAssigner()
   val parser = Parser(sicOpsTable)
   val output = ArrayList<SourceLine>()
-  inputLines.forEach { ln ->
+  inputLines.forEachIndexed { index, ln ->
+    val lineNum = index + 1
+
     // Calculate the relative address
     try {
       val line = parser.parse(ln) ?: ln.let {
-        output.add(CommentLine(ln))
-        return@forEach
+        output.add(CommentLine(lineNum, ln))
+        return@forEachIndexed
       }
 
       val address = when (line.command) {
@@ -63,12 +46,12 @@ fun main(args: Array<String>) {
       try {
         symbolStore.store(address, line)
       } catch (e: AssemblyException) {
-        errors.add(e)
+        errors[lineNum] = e
       }
 
-      output.add(AddressedLine(address, line))
+      output.add(AddressedLine(index + 1, address, line))
     } catch (e: AssemblyException) {
-      errors.add(e)
+      errors[lineNum] = e
     }
   }
 
@@ -78,7 +61,7 @@ fun main(args: Array<String>) {
   val outputLines = ArrayList<OutputLine>()
   output.forEach { s ->
     outputLines.add(when (s) {
-      is CommentLine -> CommentOutput(s.comment)
+      is CommentLine -> CommentOutput(s.number, s.comment)
       is AddressedLine -> {
         val currentAddress = absoluteTable.insertAddress(s.address, s.line)
         val obj = try {
@@ -88,21 +71,32 @@ fun main(args: Array<String>) {
           }
         } catch (e: Exception) {
           when (e) {
-            is AssemblyException -> errors.add(e)
+            is AssemblyException -> errors[s.number] = e
             else -> println(e.message)
           }
           null
         }
-        AssembledLine(currentAddress, obj, s.line)
+        AssembledLine(s.number, currentAddress, obj, s.line)
       }
     })
   }
 
-  // Print the errors followed by the assembler report
-  errors.forEach { println("********** ERROR: ${it.message}") }
-  println()
+  println(
+      """*********************************************
+Rothanak So: SIC/XE assembler
+*********************************************
+ASSEMBLER REPORT
+----------------
+     Loc   Object Code       Source Code
+     ---   -----------       -----------""")
 
+  // Print the assembler report with any errors
   for (outputLine in outputLines) {
     println(outputLine)
+
+    // Print any errors beneath the line
+    errors[outputLine.number]?.let {
+      println("********** ERROR: ${it.message}")
+    }
   }
 }

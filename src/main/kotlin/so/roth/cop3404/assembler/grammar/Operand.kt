@@ -2,6 +2,10 @@ package so.roth.cop3404.assembler.grammar
 
 sealed class Operand
 
+data class BadOperand(val operand: String) : Operand() {
+  override fun toString() = operand
+}
+
 object BlankOperand : Operand() {
   override fun toString() = ""
 }

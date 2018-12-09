@@ -36,3 +36,7 @@ data class SicOp(
   override fun key(): String = mnemonic
   override fun toString(): String = mnemonic.replace(Regex("[^a-zA-Z]+"), "")
 }
+
+data class UnsupportedOp(val operation: String) : Operation() {
+  override fun toString() = operation
+}
