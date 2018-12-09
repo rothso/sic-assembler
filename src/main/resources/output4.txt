@@ -1,0 +1,61 @@
+                      LOADER  START    0
+000000  B410                  CLEAR    X
+000002  4B202F                JSUB     GETPAIR
+000005  572071                STCH     ADDR
+000008  4B2029                JSUB     GETPAIR     . GET LOAD POINT
+00000B  57206C                STCH     ADDR2       .    INTO ADDR
+00000E  4B2023                JSUB     GETPAIR
+000011  572067                STCH     ADDR3
+000014  6B2062                LDB      ADDR        . MOVE IT TO BASE REG B
+000017  4B201A                JSUB     GETPAIR
+00001A  57205C                STCH     ADDR
+00001D  4B2014                JSUB     GETPAIR     . GET START ADDR
+000020  572057                STCH     ADDR2       .    INTO ADDR
+000023  4B200E                JSUB     GETPAIR
+000026  572052                STCH     ADDR3
+000029  4B2008        LOOP    JSUB     GETPAIR     . GET A BYTE OF SOURCE
+00002C                        BASE     ADDR
+00002C  57A04A                STCH     ADDR,X      . STORE AT B+X WITH 0 DISP
+00002F                        NOBASE
+00002F  B810                  TIXR     X           . (X)=(X)+1
+000031  3F2FF5                J        LOOP
+.
+.         SUBROUTINE TO INPUT THE NEXT 2 CHARACTERS (HEX)
+.         CONVERTING TO NUMERIC FORM IN RIGHTMOST BYTE OF A
+.
+000034  172045        GETPAIR STL      RTADDR      . SAVE RETURN ADDRESS
+000037  4B200E                JSUB     READ        . GET 1ST HEX DIGIT,
+00003A  A403                  SHIFTL   A,4         .    SHIFT LEFT TO CORRECT
+00003C  572040                STCH     HEX         .    POSITION & HOLD IT
+00003F  4B2006                JSUB     READ        . GET 2ND HEX DIGIT,
+000042  472038                OR       ORADDR      .    "OR" IT WITH THE 1ST
+000045  3E2034                J        @RTADDR     .    TO FORM THE FULL BYTE
+.
+.         SUBROUTINE TO INPUT A CHARACTER (HEX)
+.         AND CONVERT IT TO NUMERIC FORM
+.
+000048  E100F1        READ    TD       #X'F1'      . TEST DEVICE (DEVF1)
+00004B  332FFA                JEQ      READ        .    LOOPING UNTIL READY
+00004E  B400                  CLEAR    A
+000050  D900F1                RD       #X'F1'      . INPUT CHARACTER TO REG A
+000053  290030                COMP     #48         . SKIP IF NOT A
+000056  3B200F                JLT      EOFCK       .    HEX CHARACTER
+000059  1D0030                SUB      #48         . CONVERT FROM
+00005C  29000A                COMP     #10         .    CHARACTER TO
+00005F  3B2003                JLT      GOBACK      .    NUMERIC FORM
+000062  1D0007                SUB      #7
+000065  4F0000        GOBACK  RSUB
+000068  290021        EOFCK   COMP     #33         . EXIT ON "!" CHARACTER
+00006B  332006                JEQ      EXIT
+00006E  290004                COMP     #4          . EXIT ON EOF
+000071  372FD4                JGT      READ
+000074  B420          EXIT    CLEAR    L           . SET RETURN TO SYSTEM
+000076  3E2000                J        @ADDR
+000079                ADDR    RESB     1           . STORAGE 1ST FOR LOAD POINT
+00007A                ADDR2   RESB     1           .    THEN FOR START ADDRESS
+00007B                ADDR3   RESB     1
+00007C                RTADDR  RESB     1           . STORAGE FOR RSUB RETURN;
+00007D                ORADDR  RESB     1           .    THESE 2 BYTES USED BY
+00007E                        RESB     1           .    "OR"; EFFECT ON BYTE
+00007F                HEX     RESB     1           .    NAMED "HEX" IS ONLY
+000080                        END      LOADER      .    PART USED

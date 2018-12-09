@@ -134,3 +134,5 @@ B 3
 S 4
 T 5
 F 6
+
+A|X|L|PC|SW|B|S|T|F|

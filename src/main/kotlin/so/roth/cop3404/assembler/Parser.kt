@@ -19,7 +19,7 @@ class Parser(private val sicOps: SicOpsTable) {
     val comment = ln.substring(31).trim().takeIf { it.isNotBlank() }
 
     val command = when (mnemonic) {
-      "START", "BASE", "END" -> Directive(mnemonic, operand)
+      "START", "BASE", "NOBASE", "END" -> Directive(mnemonic, operand)
       "WORD", "BYTE", "RESW", "RESB" -> {
         Instruction(modifier, DataOp(mnemonic), special, parseOperand(operand))
       }
@@ -39,10 +39,17 @@ class Parser(private val sicOps: SicOpsTable) {
       in Regex("[A-Z]+,X") -> IndexedOperand(operand.split(",")[0])
       in Regex("C'[A-Z0-9]+'") -> CharOperand(operand.substringAfter("'").substringBefore("'"))
       in Regex("X'[A-F0-9]+'") -> HexOperand(operand.substringAfter("'").substringBefore("'"))
+      in Regex("A|X|L|PC|SW|B|S|T|F") -> operand.let { r1 ->
+        Register1Operand(sicOps.getRegister(r1) ?: throw InvalidRegisterException(r1))
+      }
       in Regex("[A-Z]{1,2},[A-Z]{1,2}") -> operand.split(",").let { (r1, r2) ->
         val reg1 = sicOps.getRegister(r1) ?: throw InvalidRegisterException(r1)
         val reg2 = sicOps.getRegister(r2) ?: throw InvalidRegisterException(r2)
-        RegisterOperand(reg1, reg2)
+        Register2Operand(reg1, reg2)
+      }
+      in Regex("[A-Z]{1,2},[0-9]") -> operand.split(",").let { (r1, n) ->
+        val reg1 = sicOps.getRegister(r1) ?: throw InvalidRegisterException(r1)
+        RegisterNOperand(reg1, n.toInt())
       }
       in Regex("[A-Z0-9]+") -> LabelOperand(operand)
       else -> throw InvalidOperandException(operand)

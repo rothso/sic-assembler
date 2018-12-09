@@ -1,0 +1,16 @@
+********** ERROR: Duplicate Label "BEGIN".
+********** ERROR: Ignoring invalid mnemonic "ABC".
+********** ERROR: Missing label at address 1AE4 in block "main".
+********** ERROR: Missing label at address 1AE7 in block "main".
+
+000100                ADDRES  START    100         
+000100  69100116      NOW     +LDB     #BEGIN      load base register
+000104                XXX     BASE     BEGIN       tell assembler
+000104  03200C        YYY     LDA      BE          A <- (m..m+2)
+000107                EN      RESW     4           
+000113  000002        BE      WORD     2           
+000116                BEGIN   RESW     1           
+000119                BEGIN   RESW     2200        
+001AE1                THERE   RESW     1           
+001AE4  0F2FFA                STA      THERE       
+001AE7                        END      NOW

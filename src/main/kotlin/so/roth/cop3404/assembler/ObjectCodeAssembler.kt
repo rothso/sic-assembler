@@ -17,6 +17,7 @@ class ObjectCodeAssembler(private val addresses: SymbolTable.Absolute) {
   fun onDirective(directive: Directive) {
     when (directive.name) {
       "BASE" -> base = addresses.getAddress(directive.operand)
+      "NOBASE" -> base = null
     }
   }
 
@@ -27,7 +28,7 @@ class ObjectCodeAssembler(private val addresses: SymbolTable.Absolute) {
         "BYTE" -> when(val operand = instruction.operand) {
           is CharOperand -> CharConstant(operand.string)
           is HexOperand -> HexConstant(operand.hexString)
-          else -> throw InvalidOperandException(operand.toString())
+          else -> throw BadOperandException(op.toString(), currentAddress)
         }
         "RESW" -> null
         "RESB" -> null
@@ -35,8 +36,12 @@ class ObjectCodeAssembler(private val addresses: SymbolTable.Absolute) {
       }
       is SicOp -> when (val format = op.format) {
         2 -> {
-          val (r1, r2) = instruction.operand as RegisterOperand
-          Format2(op.opcode, r1.number, r2.number)
+          when (val ro = instruction.operand) {
+            is Register1Operand -> Format2(op.opcode, ro.r1.number, 0)
+            is Register2Operand -> Format2(op.opcode, ro.r1.number, ro.r2.number)
+            is RegisterNOperand -> Format2(op.opcode, ro.r1.number, ro.n - 1)
+            else -> throw BadOperandException(ro.toString(), currentAddress)
+          }
         }
         3, 4 -> {
           // Handle the opcode flags
@@ -56,8 +61,8 @@ class ObjectCodeAssembler(private val addresses: SymbolTable.Absolute) {
           // Handle the target address
           val targetAddress = when (val operand = instruction.operand) {
             is BlankOperand -> 0
-            is RegisterOperand -> throw BadOperandException(operand.toString(), currentAddress)
             is NumericOperand -> operand.value
+            is HexOperand -> operand.hexString.toInt(16)
             is LabelOperand -> {
               val targetAddress = addresses.getAddress(operand.label)
                   ?: throw UnknownLabelException(operand.label, currentAddress)
@@ -77,17 +82,17 @@ class ObjectCodeAssembler(private val addresses: SymbolTable.Absolute) {
                   taFlag = taFlag or Flag.EXTENDED.flag
                   targetAddress
                 }
-                else -> throw IllegalStateException() // should never reach here
+                else -> throw IllegalStateException("Bad format") // should never reach here
               }
             }
-            is CharOperand, is HexOperand -> throw IllegalStateException()
+            else -> throw BadOperandException(operand.toString(), currentAddress)
           }
 
           // Return the object code object
           when (op.format) {
             3 -> Format3(opcode, taFlag, targetAddress)
             4 -> Format4(opcode, taFlag, targetAddress)
-            else -> throw IllegalStateException() // should never reach here
+            else -> throw IllegalStateException("Bad format") // should never reach here
           }
         }
         else -> null

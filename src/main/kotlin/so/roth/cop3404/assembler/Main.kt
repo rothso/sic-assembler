@@ -15,7 +15,7 @@ data class AddressedLine(val address: Address, val line: Line) : SourceLine()
 sealed class OutputLine
 
 data class CommentOutput(val comment: String) : OutputLine() {
-  override fun toString() = comment
+  override fun toString() = String.format("%22s%s", "", comment)
 }
 
 data class AssembledLine(val address: Int, val obj: ObjectCode?, val line: Line) : OutputLine() {
@@ -77,23 +77,26 @@ fun main(args: Array<String>) {
   val objectCodeAssembler = ObjectCodeAssembler(absoluteTable)
   val outputLines = ArrayList<OutputLine>()
   output.forEach { s ->
-    when (s) {
+    outputLines.add(when (s) {
       is CommentLine -> CommentOutput(s.comment)
-      is AddressedLine -> try {
+      is AddressedLine -> {
         val currentAddress = absoluteTable.insertAddress(s.address, s.line)
-        val obj = when (val command = s.line.command) {
-          is Directive -> objectCodeAssembler.onDirective(command).run { null }
-          is Instruction -> objectCodeAssembler.onInstruction(command, currentAddress)
+        val obj = try {
+          when (val command = s.line.command) {
+            is Directive -> objectCodeAssembler.onDirective(command).run { null }
+            is Instruction -> objectCodeAssembler.onInstruction(command, currentAddress)
+          }
+        } catch (e: Exception) {
+          when (e) {
+            is AssemblyException -> errors.add(e)
+            else -> println(e.message)
+          }
+          null
         }
-
-        val assembledLine = AssembledLine(currentAddress, obj, s.line)
-        outputLines.add(assembledLine)
-      } catch (e: Exception) {
-        println(e)
+        AssembledLine(currentAddress, obj, s.line)
       }
-    }
+    })
   }
-
 
   // Print the errors followed by the assembler report
   errors.forEach { println("********** ERROR: ${it.message}") }

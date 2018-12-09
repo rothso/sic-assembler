@@ -6,8 +6,16 @@ object BlankOperand : Operand() {
   override fun toString() = ""
 }
 
-data class RegisterOperand(val r1: Register, val r2: Register) : Operand() {
+data class Register1Operand(val r1: Register) : Operand() {
+  override fun toString() = "$r1"
+}
+
+data class Register2Operand(val r1: Register, val r2: Register) : Operand() {
   override fun toString() = "$r1,$r2"
+}
+
+data class RegisterNOperand(val r1: Register, val n: Int) : Operand() {
+  override fun toString() = "$r1,$n"
 }
 
 data class NumericOperand(val value: Int) : Operand() {

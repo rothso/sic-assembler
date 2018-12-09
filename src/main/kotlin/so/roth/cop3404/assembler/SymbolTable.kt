@@ -33,7 +33,8 @@ class SymbolTable(private val maxSize: Int) {
   fun store(address: Address, line: Line) {
     // Fail if there is no label
     if (line.label == null)
-      throw MissingLabelException(address.relative, address.block.name)
+      return
+      // throw MissingLabelException(address.relative, address.block.name)
 
     // Fail of the label already exists
     if (symbolTable.find(line.key()) != null)
