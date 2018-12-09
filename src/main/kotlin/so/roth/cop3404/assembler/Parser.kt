@@ -1,6 +1,6 @@
 package so.roth.cop3404.assembler
 
-class Parser {
+class Parser(private val table: SicOpsTable) {
 
   fun parse(line: String): Line? {
     // Check if line is just a comment
@@ -18,9 +18,27 @@ class Parser {
 
     val command = when (mnemonic) {
       "START", "BASE", "END" -> Directive(mnemonic, operand)
-      else -> Instruction(modifier, mnemonic, special, operand)
+      else -> {
+        val operation = when (mnemonic) {
+          "WORD", "BYTE", "RESW", "RESB" -> DataOp(mnemonic)
+          else -> table.getSicOp(mnemonic, modifier) ?: throw InvalidMnemonicException(mnemonic)
+        }
+        Instruction(modifier, operation, special, parseOperand(operand))
+      }
     }
 
     return Line(label, command, comment)
+  }
+
+  private fun parseOperand(operand: String): Operand {
+    return when {
+      operand.matches(Regex("[A-Z]+,X")) -> IndexedOperand(operand.split(",")[0])
+      operand.toIntOrNull(16) != null -> NumberOperand(operand.toInt(16))
+      operand.matches(Regex("[A-Z]{1,2},[A-Z]{1,2}")) -> {
+        val registers = operand.split(",")
+        RegisterOperand(registers[0], registers[1])
+      }
+      else -> LabelOperand(operand)
+    }
   }
 }

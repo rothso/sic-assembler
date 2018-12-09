@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.2.60'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.11'
 }
 
 group 'so.roth.cop3404.assembler'
@@ -37,6 +37,9 @@ test {
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions {
+        languageVersion = "1.3"
+    }
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"

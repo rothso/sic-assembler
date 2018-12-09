@@ -1,9 +1,8 @@
 package so.roth.cop3404.assembler
 
-import so.roth.cop3404.assembler.hash.HashTable
 import so.roth.cop3404.assembler.util.sizeBytes
 
-class Addresser(private val table: HashTable<Sicop>) {
+class AddressAssigner {
   private val useRegistry = hashMapOf<String, Block>() // (name, blockNum)
   private val useLocations = arrayListOf<Int>() // last address of each block
   private var block = Block(0, "main") // default block
@@ -20,7 +19,7 @@ class Addresser(private val table: HashTable<Sicop>) {
     }
 
   fun onDirective(directive: Directive): Address {
-    when (directive.mnemonic) {
+    when (directive.name) {
       "START" -> {
         startAddr = directive.operand.toInt(16)
         locCounter = startAddr
@@ -41,13 +40,16 @@ class Addresser(private val table: HashTable<Sicop>) {
 
   fun onInstruction(instruction: Instruction): Address {
     val address = Address(locCounter, block)
-    locCounter += when (instruction.mnemonic) {
-      "WORD" -> 3
-      "RESW" -> 3 * instruction.operand.toInt()
-      "BYTE" -> 1 * sizeBytes(instruction.operand)
-      "RESB" -> instruction.operand.toInt()
-      else -> table.find((instruction.modifier ?: "") + instruction.mnemonic)?.format
-          ?: throw InvalidMnemonicException(instruction.mnemonic)
+    locCounter += when (val operation = instruction.operation) {
+      is DataOp -> when (operation.name) {
+        // TODO avoid the need to do hacky casts
+        "WORD" -> 3
+        "RESW" -> 3 * (instruction.operand as NumberOperand).value.toString(16).toInt()
+        "BYTE" -> 1 * sizeBytes((instruction.operand as LabelOperand).label)
+        "RESB" -> (instruction.operand as NumberOperand).value
+        else -> throw InvalidMnemonicException(operation.name)
+      }
+      is SicOp -> operation.format
     }
     return address // relative address
   }

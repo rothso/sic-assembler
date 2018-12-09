@@ -17,27 +17,57 @@ data class Line(
   }
 }
 
-sealed class Command {
-  abstract val mnemonic: String
-  abstract val operand: String
-}
+sealed class Command
 
 data class Directive(
-    override val mnemonic: String,
-    override val operand: String
+    val name: String,
+    val operand: String
 ) : Command() {
   override fun toString(): String {
-    return "%-8s %-11s".format(mnemonic, operand)
+    return "%-8s %-11s".format(name, operand)
   }
+}
+
+sealed class Operation
+
+data class DataOp(val name: String) : Operation() {
+  override fun toString() = name
+}
+
+data class SicOp(
+    val mnemonic: String,
+    val opcode: String,
+    val format: Int
+) : Operation(), Keyed {
+  override fun key(): String = mnemonic
+  override fun toString(): String = mnemonic.replace(Regex("[^a-zA-Z]+"), "")
+}
+
+sealed class Operand
+
+data class RegisterOperand(val r1: String, val r2: String) : Operand() {
+  override fun toString() = "$r1,$r2"
+}
+
+data class NumberOperand(val value: Int) : Operand() {
+  override fun toString() = String.format("%X", value and 0xFFFFFF)
+}
+
+open class LabelOperand(val label: String) : Operand() {
+  override fun toString() = label
+}
+
+class IndexedOperand(label: String) : LabelOperand(label) {
+  override fun toString() = "$label,X"
 }
 
 data class Instruction(
     val modifier: String?,
-    override val mnemonic: String,
+    val operation: Operation,
     val special: String?,
-    override val operand: String
+    val operand: Operand
 ) : Command() {
   override fun toString(): String {
-    return "%-8s %-11s".format((modifier ?: "") + mnemonic, (special ?: "") + operand)
+    return "%-8s %-11s".format((modifier ?: "") + operation, (special ?: "") + operand)
   }
 }
