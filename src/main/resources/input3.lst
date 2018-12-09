@@ -1,0 +1,29 @@
+*********************************************
+Rothanak So: SIC/XE assembler
+*********************************************
+ASSEMBLER REPORT
+----------------
+     Loc   Object Code       Source Code
+     ---   -----------       -----------
+001- 00100                   ADDRES  START    100         
+002-                         . tests pc forward addressing
+003-                         . tests base addressing
+004-                         . tests pc backward addressing
+005- 00100 6910012A          NOW     +LDB     #BEGIN      load base register
+006- 00104                   XXX     BASE     BEGIN       tell assembler
+007- 00104 010001                    LDA      #1          A <- (m..m+2)
+008- 00107 050005            BBB     LDX      #5          
+009- 0010A                   EN      RESW     4           
+010- 00116 9805              BOOM    MULR     A,T         
+011- 00118 000002            BE      WORD     2           
+012- 0011B 000003            RIP     WORD     3           
+013- 0011E 000006            LOL     WORD     6           
+014- 00121 FFFFF9                    WORD     -7          
+015- 00124 000008                    WORD     8           
+016- 00127 000009                    WORD     9           
+017- 0012A                   BEGIN   RESW     1           
+018- 0012D                   JUNK    RESW     1000        
+019- 00CE5 034003                    LDA      JUNK        
+020- 00CE8 000005            THERE   WORD     5           
+021- 00CEB 0F2FFA            MMM     STA      THERE       
+022- 00CEE                           END      NOW         

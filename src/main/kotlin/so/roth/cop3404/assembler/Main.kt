@@ -4,6 +4,7 @@ import so.roth.cop3404.assembler.grammar.Directive
 import so.roth.cop3404.assembler.grammar.Instruction
 import java.io.File
 import java.util.*
+import kotlin.collections.HashMap
 
 /**
  * SIC/XE Assembler
@@ -11,19 +12,23 @@ import java.util.*
  * @author Rothanak So
  */
 fun main(args: Array<String>) {
-  val sicOpsTable = SicOpsTable("src/main/resources/SICOPS.txt")
+  println("Rothanak So: SIC/XE assembler")
 
-  val inputFile = File(args[0])
+  val name = args[0]
+  val inputFile = File(name)
   val inputLines = inputFile.readLines().filter { it.isNotBlank() }
   val numLines = inputLines.count()
 
   // Errors will be collected and reported
-  val errors = Hashtable<Int, AssemblyException>()
+  val errors = HashMap<Int, AssemblyException>()
 
   // The symbol table stores addresses of labelled lines
   val symbolStore = SymbolTable(numLines)
 
-  // Begin pass 1 assembly
+  // The SicOps table contains all the supported opcodes
+  val sicOpsTable = SicOpsTable("src/main/resources/SICOPS.txt")
+
+  // Perform first pass
   val addressAssigner = AddressAssigner()
   val parser = Parser(sicOpsTable)
   val output = ArrayList<SourceLine>()
@@ -50,8 +55,11 @@ fun main(args: Array<String>) {
       }
 
       output.add(AddressedLine(index + 1, address, line))
-    } catch (e: AssemblyException) {
-      errors[lineNum] = e
+    } catch (e: Exception) {
+      when (e) {
+        is AssemblyException -> errors[lineNum] = e
+        else -> println(e.message)
+      }
     }
   }
 
@@ -81,22 +89,20 @@ fun main(args: Array<String>) {
     })
   }
 
-  println(
-      """*********************************************
-Rothanak So: SIC/XE assembler
-*********************************************
-ASSEMBLER REPORT
-----------------
-     Loc   Object Code       Source Code
-     ---   -----------       -----------""")
+  val outputFile = name.substringAfterLast("/")
 
-  // Print the assembler report with any errors
-  for (outputLine in outputLines) {
-    println(outputLine)
+  if (errors.isNotEmpty()) {
+    println("Errors: partial object code generation, but no object file " +
+        "instantiation. Refer to $outputFile.lst")
+  } else {
+    println("""
+    Assembler report file: $outputFile.lst
+              object file: $outputFile.obj
+    """.trimIndent())
+  }
 
-    // Print any errors beneath the line
-    errors[outputLine.number]?.let {
-      println("********** ERROR: ${it.message}")
-    }
+  with(OutputWriter(outputFile, outputLines, errors)) {
+    writeLst()
+    writeObj()
   }
 }
