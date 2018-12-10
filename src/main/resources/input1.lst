@@ -5,26 +5,26 @@ ASSEMBLER REPORT
 ----------------
      Loc   Object Code       Source Code
      ---   -----------       -----------
-001- 00100                   ADDRES  START    100         
+001- 00100                   ADDRES    START    100
 002-                         . tests pc forward addressing
-003-                         . tests base addressing
-004-                         . tests pc backward addressing
-005- 00100 69100116          NOW     +LDB     #BEGIN      load base register
-006- 00104                   XXX     BASE     BEGIN       tell assembler
-007- 00104                   YYY     LDA      =X'01'      A <- (m..m+2)
-********** ERROR: Malformed or improper use of operand "=X'01'" found
-008- 00107                   EN      RESW     4           
-009- 00113 000002            BE      WORD     2           
-010- 00116                   BEGIN   RESW     1           
-011- 00119                   BEGIN   RESW     W,W         
+002-                         . tests base addressing
+002-                         . tests pc backward addressing
+002- 00100 69100116          NOW       +LDB     #BEGIN      load base register
+003- 00104                   XXX       BASE     BEGIN       tell assembler
+004- 00104 032020            YYY       LDA      =X'01'      A <- (m..m+2)
+005- 00107                   EN        RESW     4
+006- 00113 000002            BE        WORD     2
+007- 00116                   BEGIN     RESW     1
+008- 00119                   BEGIN     RESW     W,W
 ********** ERROR: Duplicate label "BEGIN" found
-012- 00119                   THERE   RESW     1           
-013- 0011C                   ZZZ     ABC      JUNK        
+009- 00119                   THERE     RESW     1
+010- 0011C                   ZZZ       ABC      JUNK
 ********** ERROR: Unsupported opcode "ABC" found
-014- 0011C                   BCD     RMO      EN          
+011- 0011C                   BCD       RMO      EN
 ********** ERROR: Malformed or improper use of operand "EN" found
-015- 0011E                   XYY     *ADD     FOO         
+012- 0011E                   XYY       *ADD     FOO
 ********** ERROR: Operand "FOO" not found in symbol table
-016- 00121 4F0000                    RSUB                 
-017- 00124 0F2FF2                    STA      THERE       
-018- 00127                           END      NOW         
+013- 00121 4F0000                      RSUB
+014- 00124 0F2FF2                      STA      THERE
+015- 00127                             END      NOW
+016- 00127 01                =X'01'    BYTE     X'01'

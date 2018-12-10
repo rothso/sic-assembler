@@ -2,6 +2,7 @@ package so.roth.cop3404.assembler
 
 import so.roth.cop3404.assembler.grammar.Directive
 import so.roth.cop3404.assembler.grammar.Instruction
+import so.roth.cop3404.assembler.grammar.Line
 import java.io.File
 import java.util.*
 import kotlin.collections.HashMap
@@ -29,18 +30,25 @@ fun main(args: Array<String>) {
   val sicOpsTable = SicOpsTable("src/main/resources/SICOPS.txt")
 
   // Perform first pass
-  val addressAssigner = AddressAssigner()
+  val inputIterator = inputLines.toMutableList().listIterator()
+  val addressAssigner = AddressAssigner { label, instruction ->
+    inputIterator.add(Line(label, instruction, null).toString())
+    inputIterator.previous()
+  }
   val parser = Parser(sicOpsTable)
   val output = ArrayList<SourceLine>()
-  inputLines.forEachIndexed { index, ln ->
+
+  var index = 0
+  while(inputIterator.hasNext()) {
+    val ln = inputIterator.next()
     val lineNum = index + 1
 
     // Calculate the relative address
     try {
       val line = parser.parse(ln) ?: ln.let {
         output.add(CommentLine(lineNum, ln))
-        return@forEachIndexed
-      }
+        null
+      } ?: continue
 
       val address = when (line.command) {
         is Directive -> addressAssigner.onDirective(line.command)
@@ -61,6 +69,8 @@ fun main(args: Array<String>) {
         else -> e.printStackTrace()
       }
     }
+
+    index++
   }
 
   // Perform second pass

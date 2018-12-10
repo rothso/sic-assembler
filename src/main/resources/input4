@@ -45,10 +45,10 @@ GETPAIR   STL      RTADDR             . SAVE RETURN ADDRESS
 .         SUBROUTINE TO INPUT A CHARACTER (HEX)
 .         AND CONVERT IT TO NUMERIC FORM
 .
-READ      TD      #X'F1'              . TEST DEVICE (DEVF1)
+READ      TD      =X'F1'              . TEST DEVICE (DEVF1)
           JEQ      READ               .    LOOPING UNTIL READY
           CLEAR    A
-          RD      #X'F1'              . INPUT CHARACTER TO REG A
+          RD      =X'F1'              . INPUT CHARACTER TO REG A
           COMP    #48                 . SKIP IF NOT A
           JLT      EOFCK              .    HEX CHARACTER
           SUB     #48                 . CONVERT FROM

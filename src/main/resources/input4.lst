@@ -6,74 +6,75 @@ ASSEMBLER REPORT
      Loc   Object Code       Source Code
      ---   -----------       -----------
 001-                         . . . . . . . . . . . . . . . . . . . . . . . . . . .
-002-                         .                                                   .
-003-                         .           UNF SIC/XE LOADER VERSION 1.2           .
-004-                         .                                                   .
-005-                         .                SCHOOL OF COMPUTING                .
-006-                         .            UNIVERSITY OF NORTH FLORIDA            .
-007-                         .              JACKSONVILLE, FL  32224              .
-008-                         .                  (904) 620-2985                   .
-009-                         .                                                   .
-010-                         .          FOR USE BY STUDENTS IN COP 3601          .
-011-                         . . . . . . . . . . . . . . . . . . . . . . . . . . .
-012- 00000                   LOADER  START    0           
-013- 00000 B410                      CLEAR    X           
-014- 00002 4B202F                    JSUB     GETPAIR     
-015- 00005 572071                    STCH     ADDR        
-016- 00008 4B2029                    JSUB     GETPAIR     . GET LOAD POINT
-017- 0000B 57206C                    STCH     ADDR2       .    INTO ADDR
-018- 0000E 4B2023                    JSUB     GETPAIR     
-019- 00011 572067                    STCH     ADDR3       
-020- 00014 6B2062                    LDB      ADDR        . MOVE IT TO BASE REG B
-021- 00017 4B201A                    JSUB     GETPAIR     
-022- 0001A 57205C                    STCH     ADDR        
-023- 0001D 4B2014                    JSUB     GETPAIR     . GET START ADDR
-024- 00020 572057                    STCH     ADDR2       .    INTO ADDR
-025- 00023 4B200E                    JSUB     GETPAIR     
-026- 00026 572052                    STCH     ADDR3       
-027- 00029 4B2008            LOOP    JSUB     GETPAIR     . GET A BYTE OF SOURCE
-028- 0002C                           BASE     ADDR        
-029- 0002C 57A04A                    STCH     ADDR,X      . STORE AT B+X WITH 0 DISP
-030- 0002F                           NOBASE               
-031- 0002F B810                      TIXR     X           . (X)=(X)+1
-032- 00031 3F2FF5                    J        LOOP        
-033-                         .
-034-                         .         SUBROUTINE TO INPUT THE NEXT 2 CHARACTERS (HEX)
-035-                         .         CONVERTING TO NUMERIC FORM IN RIGHTMOST BYTE OF A
-036-                         .
-037- 00034 172045            GETPAIR STL      RTADDR      . SAVE RETURN ADDRESS
-038- 00037 4B200E                    JSUB     READ        . GET 1ST HEX DIGIT,
-039- 0003A A403                      SHIFTL   A,4         .    SHIFT LEFT TO CORRECT
-040- 0003C 572040                    STCH     HEX         .    POSITION & HOLD IT
-041- 0003F 4B2006                    JSUB     READ        . GET 2ND HEX DIGIT,
-042- 00042 472038                    OR       ORADDR      .    "OR" IT WITH THE 1ST
-043- 00045 3E2034                    J        @RTADDR     .    TO FORM THE FULL BYTE
-044-                         .
-045-                         .         SUBROUTINE TO INPUT A CHARACTER (HEX)
-046-                         .         AND CONVERT IT TO NUMERIC FORM
-047-                         .
-048- 00048 E100F1            READ    TD       #X'F1'      . TEST DEVICE (DEVF1)
-049- 0004B 332FFA                    JEQ      READ        .    LOOPING UNTIL READY
-050- 0004E B400                      CLEAR    A           
-051- 00050 D900F1                    RD       #X'F1'      . INPUT CHARACTER TO REG A
-052- 00053 290030                    COMP     #48         . SKIP IF NOT A
-053- 00056 3B200F                    JLT      EOFCK       .    HEX CHARACTER
-054- 00059 1D0030                    SUB      #48         . CONVERT FROM
-055- 0005C 29000A                    COMP     #10         .    CHARACTER TO
-056- 0005F 3B2003                    JLT      GOBACK      .    NUMERIC FORM
-057- 00062 1D0007                    SUB      #7          
-058- 00065 4F0000            GOBACK  RSUB                 
-059- 00068 290021            EOFCK   COMP     #33         . EXIT ON "!" CHARACTER
-060- 0006B 332006                    JEQ      EXIT        
-061- 0006E 290004                    COMP     #4          . EXIT ON EOF
-062- 00071 372FD4                    JGT      READ        
-063- 00074 B420              EXIT    CLEAR    L           . SET RETURN TO SYSTEM
-064- 00076 3E2000                    J        @ADDR       
-065- 00079                   ADDR    RESB     1           . STORAGE 1ST FOR LOAD POINT
-066- 0007A                   ADDR2   RESB     1           .    THEN FOR START ADDRESS
-067- 0007B                   ADDR3   RESB     1           
-068- 0007C                   RTADDR  RESB     1           . STORAGE FOR RSUB RETURN;
-069- 0007D                   ORADDR  RESB     1           .    THESE 2 BYTES USED BY
-070- 0007E                           RESB     1           .    "OR"; EFFECT ON BYTE
-071- 0007F                   HEX     RESB     1           .    NAMED "HEX" IS ONLY
-072- 00080                           END      LOADER      .    PART USED
+001-                         .                                                   .
+001-                         .           UNF SIC/XE LOADER VERSION 1.2           .
+001-                         .                                                   .
+001-                         .                SCHOOL OF COMPUTING                .
+001-                         .            UNIVERSITY OF NORTH FLORIDA            .
+001-                         .              JACKSONVILLE, FL  32224              .
+001-                         .                  (904) 620-2985                   .
+001-                         .                                                   .
+001-                         .          FOR USE BY STUDENTS IN COP 3601          .
+001-                         . . . . . . . . . . . . . . . . . . . . . . . . . . .
+001- 00000                   LOADER    START    0
+002- 00000 B410                        CLEAR    X
+003- 00002 4B202F                      JSUB     GETPAIR
+004- 00005 572071                      STCH     ADDR
+005- 00008 4B2029                      JSUB     GETPAIR     . GET LOAD POINT
+006- 0000B 57206C                      STCH     ADDR2       .    INTO ADDR
+007- 0000E 4B2023                      JSUB     GETPAIR
+008- 00011 572067                      STCH     ADDR3
+009- 00014 6B2062                      LDB      ADDR        . MOVE IT TO BASE REG B
+010- 00017 4B201A                      JSUB     GETPAIR
+011- 0001A 57205C                      STCH     ADDR
+012- 0001D 4B2014                      JSUB     GETPAIR     . GET START ADDR
+013- 00020 572057                      STCH     ADDR2       .    INTO ADDR
+014- 00023 4B200E                      JSUB     GETPAIR
+015- 00026 572052                      STCH     ADDR3
+016- 00029 4B2008            LOOP      JSUB     GETPAIR     . GET A BYTE OF SOURCE
+017- 0002C                             BASE     ADDR
+018- 0002C 57A04A                      STCH     ADDR,X      . STORE AT B+X WITH 0 DISP
+019- 0002F                             NOBASE
+020- 0002F B810                        TIXR     X           . (X)=(X)+1
+021- 00031 3F2FF5                      J        LOOP
+022-                         .
+022-                         .         SUBROUTINE TO INPUT THE NEXT 2 CHARACTERS (HEX)
+022-                         .         CONVERTING TO NUMERIC FORM IN RIGHTMOST BYTE OF A
+022-                         .
+022- 00034 172045            GETPAIR   STL      RTADDR      . SAVE RETURN ADDRESS
+023- 00037 4B200E                      JSUB     READ        . GET 1ST HEX DIGIT,
+024- 0003A A403                        SHIFTL   A,4         .    SHIFT LEFT TO CORRECT
+025- 0003C 572040                      STCH     HEX         .    POSITION & HOLD IT
+026- 0003F 4B2006                      JSUB     READ        . GET 2ND HEX DIGIT,
+027- 00042 472038                      OR       ORADDR      .    "OR" IT WITH THE 1ST
+028- 00045 3E2034                      J        @RTADDR     .    TO FORM THE FULL BYTE
+029-                         .
+029-                         .         SUBROUTINE TO INPUT A CHARACTER (HEX)
+029-                         .         AND CONVERT IT TO NUMERIC FORM
+029-                         .
+029- 00048 E32035            READ      TD       =X'F1'      . TEST DEVICE (DEVF1)
+030- 0004B 332FFA                      JEQ      READ        .    LOOPING UNTIL READY
+031- 0004E B400                        CLEAR    A
+032- 00050 DB202D                      RD       =X'F1'      . INPUT CHARACTER TO REG A
+033- 00053 290030                      COMP     #48         . SKIP IF NOT A
+034- 00056 3B200F                      JLT      EOFCK       .    HEX CHARACTER
+035- 00059 1D0030                      SUB      #48         . CONVERT FROM
+036- 0005C 29000A                      COMP     #10         .    CHARACTER TO
+037- 0005F 3B2003                      JLT      GOBACK      .    NUMERIC FORM
+038- 00062 1D0007                      SUB      #7
+039- 00065 4F0000            GOBACK    RSUB
+040- 00068 290021            EOFCK     COMP     #33         . EXIT ON "!" CHARACTER
+041- 0006B 332006                      JEQ      EXIT
+042- 0006E 290004                      COMP     #4          . EXIT ON EOF
+043- 00071 372FD4                      JGT      READ
+044- 00074 B420              EXIT      CLEAR    L           . SET RETURN TO SYSTEM
+045- 00076 3E2000                      J        @ADDR
+046- 00079                   ADDR      RESB     1           . STORAGE 1ST FOR LOAD POINT
+047- 0007A                   ADDR2     RESB     1           .    THEN FOR START ADDRESS
+048- 0007B                   ADDR3     RESB     1
+049- 0007C                   RTADDR    RESB     1           . STORAGE FOR RSUB RETURN;
+050- 0007D                   ORADDR    RESB     1           .    THESE 2 BYTES USED BY
+051- 0007E                             RESB     1           .    "OR"; EFFECT ON BYTE
+052- 0007F                   HEX       RESB     1           .    NAMED "HEX" IS ONLY
+053- 00080                             END      LOADER      .    PART USED
+054- 00080 F1                =X'F1'    BYTE     X'F1'

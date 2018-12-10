@@ -9,6 +9,6 @@ data class Line(
 ) : Keyed {
   override fun key(): String = label ?: throw IllegalStateException("Key is null")
   override fun toString(): String {
-    return "%-7s %s %s".format(label ?: "", command, comment ?: "")
+    return "%-9s %s %s".format(label ?: "", command, comment ?: "")
   }
 }

@@ -19,7 +19,7 @@ class Parser(private val sicOps: SicOpsTable) {
     val comment = ln.substring(31).trim().takeIf { it.isNotBlank() }
 
     val command = when (mnemonic) {
-      "START", "BASE", "NOBASE", "END", "USE" -> Directive(mnemonic, operand)
+      "START", "BASE", "NOBASE", "END", "USE", "LTORG" -> Directive(mnemonic, operand)
       "WORD", "BYTE", "RESW", "RESB" -> {
         Instruction(modifier, DataOp(mnemonic), special, parseOperand(operand))
       }

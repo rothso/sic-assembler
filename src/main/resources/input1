@@ -4,7 +4,7 @@ ADDRES    START    100
 . tests pc backward addressing
 NOW      +LDB     #BEGIN              load base register
 XXX       BASE     BEGIN              tell assembler
-YYY       LDA      =X'01'             A <- (m..m+2)
+YYY       LDA     =X'01'              A <- (m..m+2)
 EN        RESW     4
 BE        WORD     2
 BEGIN     RESW     1

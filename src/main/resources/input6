@@ -1,0 +1,26 @@
+          START    100
+EXA       LDT     #4
+          ADDR     T,A
+          SUB     =X'1D'
+          SUB      N
+         +ADD      SEC
+          STA     @ANS
+          J        PAST
+          LTORG
+PAST      LDX      THR
+          STA      ANS,X
+          SUB     =X'0259'
+          RESW     20
+          LDS     #ANS
+          LDS     #100
+          LDS      EXA
+         +ADD      SEC,X
+          ADD     =C'12345'
+          LTORG
+          ADD     =C'05'
+          RSUB
+SEC       WORD     -7
+N         WORD     29
+ANS       RESW     2
+THR       WORD     3
+          END      EXA

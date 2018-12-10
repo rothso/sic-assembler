@@ -2,7 +2,7 @@ package so.roth.cop3404.assembler
 
 import so.roth.cop3404.assembler.grammar.*
 
-class AddressAssigner {
+class AddressAssigner(private val addFunc: (label: String, Instruction) -> Unit) {
   private val useRegistry = hashMapOf<String, Block>() // (name, blockNum)
   private val useLocations = arrayListOf<Int>() // last address of each block
   private var block = Block(0, "main") // default block
@@ -49,7 +49,16 @@ class AddressAssigner {
         // END belongs in the last block
         val lastAddress = useLocations.last()
         val lastBlock = useRegistry.maxBy { it.value.number }?.value ?: block
+
+        // Empty the literal table just in case
+        litTable.forEach { label, instruction -> addFunc(label, instruction) }
+        litTable.clear()
+
         return Address(lastAddress, lastBlock)
+      }
+      "LTORG" -> {
+        litTable.forEach { label, instruction -> addFunc(label, instruction) }
+        litTable.clear()
       }
     }
     return Address(locCounter, block) // relative address
@@ -76,9 +85,31 @@ class AddressAssigner {
         }
         else -> throw UnsupportedOpcodeException(op.name)
       }
-      is SicOp -> op.format
+      is SicOp -> {
+        if (instruction.special == "=") {
+          when (operand) {
+            is HexOperand -> storeLiteral(operand)
+            is CharOperand -> storeLiteral(operand)
+          }
+        }
+        op.format
+      }
       is UnsupportedOp -> 0
     }
     return address // relative address
+  }
+
+  private val litTable = mutableMapOf<String, Instruction>()
+
+  private fun storeLiteral(operand: HexOperand) {
+    storeLiteral("=X'${operand.hexString.take(4)}'", operand)
+  }
+
+  private fun storeLiteral(operand: CharOperand) {
+    storeLiteral("=C'${operand.string.take(4)}'", operand)
+  }
+
+  private fun storeLiteral(label: String, operand: Operand) {
+    litTable[label] = Instruction(null, DataOp("BYTE"), null, operand)
   }
 }

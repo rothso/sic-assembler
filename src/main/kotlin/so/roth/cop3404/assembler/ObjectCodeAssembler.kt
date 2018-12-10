@@ -67,10 +67,19 @@ class ObjectCodeAssembler(private val addresses: SymbolTable.Absolute) {
           val targetAddress = when (operand) {
             is BlankOperand -> 0
             is NumericOperand -> operand.value
-            is HexOperand -> operand.hexString.toInt(16)
-            is LabelOperand -> {
-              val targetAddress = addresses.getAddress(operand.label)
-                  ?: throw UnresolvableLabelException(operand.label)
+            is LabelOperand, is HexOperand, is CharOperand -> {
+              if ((operand is HexOperand || operand is CharOperand) && instruction.special != "=")
+                throw MisusedOperandException(operand.toString())
+
+              val targetLabel = when(operand) {
+                is LabelOperand -> operand.label
+                is HexOperand -> "=X'${operand.hexString.take(4)}'"
+                is CharOperand -> "=C'${operand.string.take(4)}'"
+                else -> throw IllegalStateException()
+              }
+
+              val targetAddress = addresses.getAddress(targetLabel)
+                  ?: throw UnresolvableLabelException(targetLabel)
 
               when (format) {
                 3 -> {
