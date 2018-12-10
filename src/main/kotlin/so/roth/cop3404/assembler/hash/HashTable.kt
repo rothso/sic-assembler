@@ -34,7 +34,7 @@ class HashTable<T : Keyed> constructor(
   /**
    * Retrieve an item from the hash table, or null if it does not exist.
    */
-  fun find(key: String): T? = search(key) { node, pos -> node.item }
+  fun find(key: String): T? = search(key) { node, _ -> node.item }
 
   /**
    * Delete an item from the hash table, returning it if successful.

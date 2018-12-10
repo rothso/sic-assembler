@@ -9,10 +9,10 @@ assembler.jar: kotlinc
 	@echo -e "Done! Run with: \e[36mjava -jar assembler.jar the_input_file.txt\e[0m"
 
 kotlinc:
-	@echo -e "\e[32mDownloading Kotlin 1.2.61\e[0m"
-	@curl -O -L https://github.com/JetBrains/kotlin/releases/download/v1.2.61/kotlin-compiler-1.2.61.zip
-	@unzip kotlin-compiler-1.2.61.zip
-	@$(RM) kotlin-compiler-1.2.61.zip
+	@echo -e "\e[32mDownloading Kotlin 1.3.11\e[0m"
+	@curl -O -L https://github.com/JetBrains/kotlin/releases/download/v1.3.11/kotlin-compiler-1.3.11.zip
+	@unzip kotlin-compiler-1.3.11.zip
+	@$(RM) kotlin-compiler-1.3.11.zip
 
 clean:
 	@$(RM) assembler.jar

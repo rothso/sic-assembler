@@ -90,6 +90,7 @@ class AddressAssigner(private val addFunc: (label: String, Instruction) -> Unit)
           when (operand) {
             is HexOperand -> storeLiteral(operand)
             is CharOperand -> storeLiteral(operand)
+            else -> {}
           }
         }
         op.format
