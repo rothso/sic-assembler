@@ -10,18 +10,26 @@ class AddressAssigner {
   private var locCounter = 0
 
   init {
+    useRegistry[""] = block
     useLocations.add(0)
   }
 
   val useStartAddresses
-    get() = useLocations.mapIndexed { i, n ->
-      n + if (i != 0) useLocations[i - 1] else 0
+    get() = let {
+      // Save the last address
+      useLocations[block.number] = locCounter
+
+      // Return a list of the offsets for each block
+      mutableListOf<Int>().apply {
+        for (i in 0..useLocations.size)
+          add(i, if (i != 0) this[i - 1] + useLocations[i - 1] else 0)
+      }.toList()
     }
 
   fun onDirective(directive: Directive): Address {
     when (directive.name) {
       "START" -> {
-        startAddr = directive.operand.toInt(16)
+        startAddr = directive.operand.toIntOrNull(16) ?: 0
         locCounter = startAddr
       }
       "USE" -> {
@@ -33,6 +41,15 @@ class AddressAssigner {
           Block(useRegistry.size, directive.operand).also { useLocations.add(0) }
         }
         locCounter = useLocations[block.number]
+      }
+      "END" -> {
+        // Save the last address
+        useLocations[block.number] = locCounter
+
+        // END belongs in the last block
+        val lastAddress = useLocations.last()
+        val lastBlock = useRegistry.maxBy { it.value.number }?.value ?: block
+        return Address(lastAddress, lastBlock)
       }
     }
     return Address(locCounter, block) // relative address
@@ -65,4 +82,3 @@ class AddressAssigner {
     return address // relative address
   }
 }
-

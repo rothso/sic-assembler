@@ -1,0 +1,36 @@
+*********************************************
+Rothanak So: SIC/XE assembler
+*********************************************
+ASSEMBLER REPORT
+----------------
+     Loc   Object Code       Source Code
+     ---   -----------       -----------
+001- 00000                   EXAMPLE START
+002- 00000 032007                    LDA      FIRST
+003- 00003 1B2007                    ADD      SEC
+004- 00006 0F100013                  +STA     ANS
+
+021- 0000A                           USE
+022- 0000A 000004            FIRST   WORD     4
+023- 0000D 000007            SEC     WORD     7
+024- 00010                   NUM     RESW     1
+025- 00013                   ANS     RESW     2
+026- 00019 000001            ONE     WORD     1
+
+006- 0001C                           USE      HIS
+007- 0001C 072FFA                    LDX      ONE
+008- 0001F 0FAFF1                    STA      ANS,X
+009- 00022 4F0000                    RSUB
+
+
+017- 00025                           USE      HIS
+018- 00025 AC10                      RMO      X,A
+019- 00027 3B2006                    JLT      UP
+
+011- 0002A                           USE      HERS
+012- 0002A 050000                    LDX      #0
+013- 0002D 772FE9                    LDT      ONE
+014- 00030 030000            UP      LLDA     3
+015- 00033 AC45                      RMO      S,T
+
+027- 00035                           END      EXAMPLE

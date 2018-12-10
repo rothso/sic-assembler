@@ -58,7 +58,7 @@ fun main(args: Array<String>) {
     } catch (e: Exception) {
       when (e) {
         is AssemblyException -> errors[lineNum] = e
-        else -> println(e.message)
+        else -> e.printStackTrace()
       }
     }
   }
@@ -80,7 +80,7 @@ fun main(args: Array<String>) {
         } catch (e: Exception) {
           when (e) {
             is AssemblyException -> errors[s.number] = e
-            else -> println(e.message)
+            else -> e.printStackTrace()
           }
           null
         }

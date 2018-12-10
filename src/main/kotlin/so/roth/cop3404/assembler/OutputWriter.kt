@@ -38,6 +38,7 @@ class OutputWriter(
     File("$name.obj").printWriter().use { out ->
       if (errors.isEmpty()) {
         val assembledLines = outputLines.filterIsInstance<AssembledLine>()
+            .sortedWith(compareBy({ it.address }, { it.number }))
 
         // Find the index of the last RESW/RESB
         val last = assembledLines.indexOfLast { assembledLine ->
