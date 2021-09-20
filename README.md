@@ -1,7 +1,7 @@
-Project 4: Pass 2 Assembler w/ support for USE and Literals
+SIC Assembler
 ===========================
 
-Rothanak So (n01128755)
+> 2-Pass Assembler with support for USE and Literals
 
 
 # Purpose
@@ -26,11 +26,10 @@ This assembler supports the following assembler features:
 Source files are located at `src/main/kotlin/so/roth/cop3404/assembler`. The important
 files and directories are:
 
-   grammar\                 Contains data classes that model the SIC instructions
-   AddressAssigner.kt       Contains pass 1 logic
-   ObjectCodeAssembler.kt   Performs pass 2 logic
-   Main.kt			        Main method
-
+    grammar\                 Contains data classes that model the SIC instructions
+    AddressAssigner.kt       Contains pass 1 logic
+    ObjectCodeAssembler.kt   Performs pass 2 logic
+    Main.kt			 Main method
 
 # Input
 
@@ -38,15 +37,15 @@ The program requires an input file to be passed in as the first argument. The
 input file is the SIC program that is to be assembled. The input program will
 need to adhere to the following format:
 
-     Col 1-8    Label (optional)
-     Col 9      Blank
-     Col 10     + or * (optional)
-     Col 11-17  Mnemonic
-     Col 18     Blank
-     Col 19     #, @, = (optional)
-     Col 20-29  Operand
-     Col 30-31  Blank
-     Col 32-80  Comments (optional)
+    Col 1-8    Label (optional)
+    Col 9      Blank
+    Col 10     + or * (optional)
+    Col 11-17  Mnemonic
+    Col 18     Blank
+    Col 19     #, @, = (optional)
+    Col 20-29  Operand
+    Col 30-31  Blank
+    Col 32-80  Comments (optional)
 
 The test files for the program are located at `src/test/resources/input.txt`.
 
