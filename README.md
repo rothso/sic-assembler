@@ -4,7 +4,7 @@ SIC Assembler
 > 2-Pass Assembler with support for USE and Literals
 
 
-# Purpose
+## Purpose
 
 The purpose of this project is to implement both pass 1 and pass 2 of the SIC assembler.
 The program uses a hash table to maintain a list of valid mnemonics and a separate hash
@@ -21,7 +21,7 @@ This assembler supports the following assembler features:
 - Literals/LTORG (input6.txt)
 
 
-# Source files
+## Source files
 
 Source files are located at `src/main/kotlin/so/roth/cop3404/assembler`. The important
 files and directories are:
@@ -31,7 +31,7 @@ files and directories are:
     ObjectCodeAssembler.kt   Performs pass 2 logic
     Main.kt			 Main method
 
-# Input
+## Input
 
 The program requires an input file to be passed in as the first argument. The
 input file is the SIC program that is to be assembled. The input program will
@@ -57,7 +57,7 @@ The test files for the program are located at `src/test/resources/input.txt`.
     src/test/resources/input6.txt - Literals / LTORG
 
 
-# Output
+## Output
 
 The program will output two files: pgm.lst and pgm.asm. If there were any assembler
 errors, they will be reported in the .lst file and a message will be displayed in the
@@ -76,7 +76,7 @@ There are sample corresponding output .lst and .obj files for each of the
 six input files in the `src/test/resources/` directory.
 
 
-# How to execute
+## How to execute
 
 The project was developed using Gradle, but can be built with the Kotlin
 compiler directly. The compiler is automatically installed locally during
